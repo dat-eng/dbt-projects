@@ -3,9 +3,6 @@
 ![Python](https://img.shields.io/badge/Python-3.13-blue)
 ![dbt](https://img.shields.io/badge/dbt-core-orange)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
-![License: MIT](https://img.shields.io/badge/License-MIT-green)
-![Build](https://github.com/dat-eng/dbt-order-analytics/actions/workflows/dbt-ci.yml/badge.svg)
-
 ---
 
 ## 📊 Overview
@@ -33,13 +30,18 @@ marts.fct_revenue
 
 ## ⚙️ Setup Instructions
 
-1️⃣ Install dbt + Postgres adapter
+#### 1️⃣ Install dbt + Postgres adapter
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install dbt-postgres
 ```
-2️⃣ Create Postgres Database
+#### 2️⃣ Create Postgres Database
+Log into postgres as admin:
+```bash
+psql postgres
+```
+Create the database and other objects:
 ```sql
 CREATE DATABASE dbt_learn;
 CREATE USER dbt_user WITH PASSWORD 'dbtpass';
@@ -58,4 +60,13 @@ INSERT INTO raw.orders VALUES
 (1, 'Alice', 100, 'USD', NOW()),
 (2, 'Bob', 200, 'EUR', NOW()),
 (3, 'Cathy', NULL, 'USD', NOW());
+```
+#### 3️⃣ Verify Permissions
+```bash
+psql -U dbt_user -d dbt_learn
+```
+Then run:
+```sql
+\dn          -- lists schemas (raw, analytics)
+\dt raw.*    -- lists tables in raw
 ```
