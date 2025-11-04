@@ -9,17 +9,36 @@ on:
 jobs:
   run-dbt:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python and install dbt
-        id: setup
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dbt
+        run: pip install dbt-postgres
+
+      - name: Create dbt profile
         run: |
-          python -m venv venv
-          echo "VIRTUAL_ENV=$PWD/venv" >> $GITHUB_ENV
-          echo "$PWD/venv/bin" >> $GITHUB_PATH
-          pip install dbt-postgres
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml <<EOL
+          dbt_learn:
+            target: dev
+            outputs:
+              dev:
+                type: postgres
+                host: ${{ secrets.DBT_HOST }}
+                user: ${{ secrets.DBT_USER }}
+                password: ${{ secrets.DBT_PASS }}
+                port: ${{ secrets.DBT_PORT }}
+                dbname: ${{ secrets.DBT_NAME }}
+                schema: ${{ secrets.DBT_SCHEMA }}
+                threads: 2
+          EOL
 
       - name: Verify dbt
         run: dbt --version
