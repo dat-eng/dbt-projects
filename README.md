@@ -24,21 +24,23 @@ staging.stg_orders
     │
     ▼
 marts.fct_revenue
+```
 
 	•	Staging Layer: Cleans raw data.
 	•	Mart Layer: Aggregates revenue and order counts.
 	•	Tests: Ensure data quality (no nulls, no duplicates).
 	•	Docs: Auto-generated lineage and column metadata.
 
-⚙️ Setup Instructions
+## ⚙️ Setup Instructions
 
 1️⃣ Install dbt + Postgres adapter
+```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install dbt-postgres
-
-Create Postgres Database
-
+```
+2️⃣ Create Postgres Database
+```sql
 CREATE DATABASE dbt_learn;
 CREATE USER dbt_user WITH PASSWORD 'dbtpass';
 GRANT ALL PRIVILEGES ON DATABASE dbt_learn TO dbt_user;
@@ -56,3 +58,4 @@ INSERT INTO raw.orders VALUES
 (1, 'Alice', 100, 'USD', NOW()),
 (2, 'Bob', 200, 'EUR', NOW()),
 (3, 'Cathy', NULL, 'USD', NOW());
+```
