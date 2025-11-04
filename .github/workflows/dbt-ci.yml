@@ -23,9 +23,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install dbt-postgres
-
-      - name: Verify dbt version
-        run: dbt --version
+          dbt --version
 
       - name: Run dbt build
         run: |
