@@ -13,17 +13,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Install dependencies
+      - name: Set up Python and install dbt
+        id: setup
         run: |
           python -m venv venv
-          source venv/bin/activate
+          echo "VIRTUAL_ENV=$PWD/venv" >> $GITHUB_ENV
+          echo "$PWD/venv/bin" >> $GITHUB_PATH
           pip install dbt-postgres
-          dbt --version
+
+      - name: Verify dbt
+        run: dbt --version
 
       - name: Run dbt build
         run: |
