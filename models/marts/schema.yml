@@ -1,0 +1,25 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Cleaned and standardized orders data"
+    columns:
+      - name: order_id
+        description: "Unique identifier for each order"
+        tests:
+          - not_null
+          - unique
+      - name: amount
+        description: "Transaction amount"
+        tests:
+          - not_null
+
+  - name: fct_revenue
+    description: "Aggregated daily revenue by currency"
+    columns:
+      - name: total_revenue
+        description: "Sum of transaction amounts per day"
+        tests:
+          - not_null
+      - name: total_orders
+        description: "Count of valid orders per day"

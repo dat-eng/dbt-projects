@@ -1,0 +1,9 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: "Raw order data from transactional source"
+    tables:
+      - name: orders
+        description: "Individual order transactions captured from source systems"

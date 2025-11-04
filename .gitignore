@@ -1,0 +1,25 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python virtual environment
+venv/
+.env/
+__pycache__/
+*.py[cod]
+
+# dbt build artifacts
+target/
+dbt_packages/
+logs/
+manifest.json
+run_results.json
+
+# IDE and editor settings
+.vscode/
+
+# OS/Temporary files
+*.log
+*.tmp
+*.bak
