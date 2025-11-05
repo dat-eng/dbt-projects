@@ -18,8 +18,8 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_DB: dbt_learn
-          POSTGRES_USER: ${{ secrets.DBT_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.DBT_PASS }}
+          POSTGRES_USER: dbt_user
+          POSTGRES_PASSWORD: dbtpass
         options: >-
           --health-cmd "pg_isready -U ${{ secrets.DBT_USER }} -d dbt_learn"
           --health-interval 10s
