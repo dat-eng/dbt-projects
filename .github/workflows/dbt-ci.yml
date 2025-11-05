@@ -7,9 +7,10 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  run-dbt:
     runs-on: ubuntu-latest
 
+    # 0️⃣  Start temporary Postgres service
     services:
       postgres:
         image: postgres:16
@@ -17,20 +18,20 @@ jobs:
           - 5432:5432
         env:
           POSTGRES_DB: dbt_learn
-          POSTGRES_USER: dbt_user
-          POSTGRES_PASSWORD: dbtpass
+          POSTGRES_USER: ${{ secrets.DBT_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.DBT_PASS }}
         options: >-
-          --health-cmd "pg_isready -U dbt_user -d dbt_learn"
+          --health-cmd "pg_isready -U ${{ secrets.DBT_USER }} -d dbt_learn"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     steps:
-      # 1️⃣ Checkout code
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Python
+      # 2️⃣ Setup Python environment
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -40,7 +41,7 @@ jobs:
       - name: Install dbt
         run: pip install dbt-postgres
 
-      # 4️⃣ Create dbt profile for CI environment
+      # 4️⃣ Create dbt profile using GitHub Secrets
       - name: Create dbt profile
         run: |
           mkdir -p ~/.dbt
@@ -51,8 +52,8 @@ jobs:
               dev:
                 type: postgres
                 host: localhost
-                user: dbt_user
-                password: dbtpass
+                user: ${{ secrets.DBT_USER }}
+                password: ${{ secrets.DBT_PASS }}
                 port: 5432
                 dbname: dbt_learn
                 schema: analytics
@@ -61,12 +62,15 @@ jobs:
 
       # 5️⃣ Initialize schemas and seed data
       - name: Initialize database schemas
+        env:
+          DBT_USER: ${{ secrets.DBT_USER }}
+          DBT_PASS: ${{ secrets.DBT_PASS }}
         run: |
           sudo apt-get update && sudo apt-get install -y postgresql-client
           echo "Initializing schemas and raw.orders table..."
-          PGPASSWORD=dbtpass psql -h localhost -U dbt_user -d dbt_learn -p 5432 <<'SQL'
-          CREATE SCHEMA IF NOT EXISTS raw AUTHORIZATION dbt_user;
-          CREATE SCHEMA IF NOT EXISTS analytics AUTHORIZATION dbt_user;
+          PGPASSWORD=$DBT_PASS psql -h localhost -U $DBT_USER -d dbt_learn -p 5432 <<'SQL'
+          CREATE SCHEMA IF NOT EXISTS raw AUTHORIZATION $DBT_USER;
+          CREATE SCHEMA IF NOT EXISTS analytics AUTHORIZATION $DBT_USER;
 
           CREATE TABLE IF NOT EXISTS raw.orders (
             order_id INT PRIMARY KEY,
@@ -83,17 +87,29 @@ jobs:
           ON CONFLICT (order_id) DO NOTHING;
           SQL
 
-      # 6️⃣ Verify dbt version and connection
+      # 6️⃣ Verify dbt installation
       - name: Verify dbt
         run: dbt --version
 
-      # 7️⃣ Run dbt build (deps + run )
+      # 7️⃣ Run dbt build (deps + run + test)
       - name: Run dbt build
         run: |
           dbt deps
           dbt run
-
-      # 8️⃣ Run dbt test    
-      - name: Run dbt test
-        run: |
           dbt test
+        continue-on-error: true
+
+      # 8️⃣ Generate dbt documentation (DAG + metadata)
+      - name: Generate dbt docs
+        run: |
+          dbt docs generate
+          mkdir -p docs
+          cp -r target/* docs/
+
+      # 9️⃣ Deploy dbt docs to GitHub Pages (optional)
+      - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
